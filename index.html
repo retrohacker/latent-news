@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="./normalize.css"/>
+    <style>
+      #title {
+        padding: 1em;
+      }
+      html, body, #news, #news iframe {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      #navbar {
+        margin-bottom: 1em;
+      }
+      #navbar span {
+        background-color: #CCC;
+        padding: 1em 1em;
+        color: black;
+        font-weight: bold;
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+      #navbar span.selected {
+        background-color: #96F;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      var URLs = {}
+      var selection = 'fox'
+
+      function request(name, url) {
+        // Offset by 90 days
+        var offset = 60 * 60 * 24 * 1000 * 30 * 6
+        var now = Date.now()
+        var target = new Date(now - offset)
+        var year = String(target.getFullYear())
+        var month = String(target.getMonth() + 1)
+        if (month.length === 1) {
+          month = '0' + month
+        }
+        var day = String(target.getDate() + 1)
+        if (day.length === 1) {
+          day = '0' + day
+        }
+        var timestamp = year + month + day
+        var req = new XMLHttpRequest()
+        req.addEventListener("load", function () {
+          try {
+            var resp = JSON.parse(this.responseText)
+            var url = resp.archived_snapshots.closest.url
+            URLs[name] = url.replace('http://', 'https://')
+          } catch(e) {
+            console.error(e)
+          }
+          console.log(URLs)
+          refresh()
+        })
+        req.open("GET", `https://archive.org/wayback/available?url=https://${url}&timestamp=${timestamp}`)
+        req.send()
+      }
+
+      function select(val) {
+        console.log(val)
+        if(val === selection) {
+          return
+        }
+        selection = val
+        refresh()
+      }
+
+      function refresh() {
+        var news = document.getElementById('news')
+        while(news.firstChild) {
+          news.removeChild(news.firstChild)
+        }
+        var iframe = document.createElement("iframe")
+        iframe.src = URLs[selection]
+        news.appendChild(iframe)
+        var navbar = document.getElementById('navbar')
+        for(var i = 0; i < navbar.children.length; i++) {
+          navbar.children[i].className = ''
+        }
+        var selected = document.getElementById(selection)
+        selected.className = 'selected'
+      }
+
+      request('fox', 'www.foxnews.com')
+      request('cnn', 'www.cnn.com')
+      request('msnbc', 'www.msnbc.com')
+    </script>
+    <div id="title">
+      <h2>The News (from 180 days ago)</h2>
+    </div>
+    <div id="navbar">
+      <span id="fox" onclick="select('fox')">Fox</span><!--
+      --><span id="cnn" onclick="select('cnn')">CNN</span><!--
+      --><span id="msnbc" onclick="select('msnbc')">MSNBC</span>
+    </div>
+    <div id="news">
+    </div>
+  </body>
+</html>
