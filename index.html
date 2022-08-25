@@ -37,8 +37,8 @@
       var selection = 'fox'
 
       function request(name, url) {
-        // Offset by 90 days
-        var offset = 60 * 60 * 24 * 1000 * 30 * 6
+        // Offset by 4 years
+        var offset = 60 * 60 * 24 * 1000 * 365 * 4
         var now = Date.now()
         var target = new Date(now - offset)
         var year = String(target.getFullYear())
@@ -97,7 +97,7 @@
       request('msnbc', 'www.msnbc.com')
     </script>
     <div id="title">
-      <h2>The News (from 180 days ago)</h2>
+      <h2>The News (from 4 years ago)</h2>
     </div>
     <div id="navbar">
       <span id="fox" onclick="select('fox')">Fox</span><!--
